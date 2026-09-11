@@ -6,6 +6,23 @@ from app.rag import chunk_markdown, delete_all_chunks, embed, search, upsert
 
 DOCS_ROOT = Path(__file__).resolve().parents[2] / "sample_docs"
 
+# Nicknames the summarize agent might pass instead of a real filename.
+POLICY_ALIASES = {
+    "pto": "pto-policy.md",
+    "pto-policy": "pto-policy.md",
+    "vacation": "pto-policy.md",
+    "leave": "pto-policy.md",
+    "time-off": "pto-policy.md",
+    "security": "security.md",
+    "phishing": "security.md",
+    "onboarding": "onboarding.md",
+    "incidents": "incidents.md",
+    "incident": "incidents.md",
+    "eng": "eng-practices.md",
+    "engineering": "eng-practices.md",
+    "eng-practices": "eng-practices.md",
+}
+
 
 def _resolve_folder(folder: str) -> Path | dict:
     """Only allow folders inside sample_docs/. Block ../ and absolute paths."""
@@ -17,6 +34,30 @@ def _resolve_folder(folder: str) -> Path | dict:
         return {"status": "error", "error": "folder must stay under sample_docs/"}
     if not candidate.is_dir():
         return {"status": "error", "error": f"not a directory: {folder}"}
+    return candidate
+
+
+def _resolve_policy_file(folder: Path, filename: str) -> Path | dict:
+    """Map a policy nickname to a .md file inside folder. No path traversal."""
+    raw = filename.strip()
+    if not raw:
+        return {"status": "error", "error": "filename is required"}
+
+    name = Path(raw).name
+    key = name.lower().replace(" ", "-").replace("_", "-")
+    if key.endswith(".md"):
+        key = key[:-3]
+    mapped = POLICY_ALIASES.get(key, name if name.endswith(".md") else f"{key}.md")
+
+    candidate = (folder / mapped).resolve()
+    if not candidate.is_relative_to(folder.resolve()):
+        return {"status": "error", "error": "file must stay in the folder"}
+    if not candidate.is_file():
+        available = ", ".join(p.name for p in sorted(folder.glob("*.md"))) or "(none)"
+        return {
+            "status": "error",
+            "error": f"not a file: {mapped}. available: {available}",
+        }
     return candidate
 
 
@@ -73,5 +114,35 @@ def search_docs(query: str, k: int = 5) -> dict:
         "hits": [
             {"path": path, "content": content, "score": float(score)}
             for path, content, score in rows
+        ],
+    }
+
+
+def get_policy_text(folder: str, filename: str = "") -> dict:
+    """Read handbook markdown from disk for summarization (not search).
+
+    Args:
+        folder: Path relative to sample_docs/ (example: acme-handbook).
+        filename: Optional policy file or nickname (pto, security). Empty = all .md in the folder.
+    """
+    resolved = _resolve_folder(folder)
+    if isinstance(resolved, dict):
+        return resolved
+
+    if filename and str(filename).strip():
+        policy = _resolve_policy_file(resolved, filename)
+        if isinstance(policy, dict):
+            return policy
+        md_files = [policy]
+    else:
+        md_files = sorted(resolved.glob("*.md"))
+        if not md_files:
+            return {"status": "error", "error": "no .md files found"}
+
+    return {
+        "status": "success",
+        "files": [
+            {"path": path.name, "content": path.read_text(encoding="utf-8")}
+            for path in md_files
         ],
     }
