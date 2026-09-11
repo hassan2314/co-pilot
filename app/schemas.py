@@ -14,7 +14,10 @@ class IngestResponse(BaseModel):
 
 class AskRequest(BaseModel):
     question: str = Field(
-        examples=["How many PTO days do employees get each year?"]
+        examples=[
+            "How many PTO days do employees get each year?",
+            "Summarize the PTO policy",
+        ]
     )
 
 
