@@ -9,8 +9,8 @@ Client (React UI in sibling repo `co-pilot-ui` / curl / Postman / Swagger)
         │
         ▼
    FastAPI
-   POST /v1/ingest   → ingest_folder (chunk → embed → upsert)
-   POST /v1/ask      → ADK Runner (coordinator → qa_agent → search_docs)
+   POST /v1/ingest   → ingest_folder (chunk → embed → upsert, no LLM)
+   POST /v1/ask      → ADK Runner (coordinator → qa_agent | summarize_folder_agent)
    GET  /health
         │
         ▼
@@ -25,20 +25,20 @@ This is the backend-shaped version of a docs copilot:
 - **API first** — Swagger at `/docs`, not only `adk web`
 - **Persistent memory** — embeddings live in Postgres, not in the prompt
 - **Grounded answers** — `path` and `score` come from the search tool, not the LLM
-- **Clear roles** — ingest is a pipeline; Q&A is agentic
+- **Clear roles** — ingest is a pipeline; Q&A and summaries are agentic
 
 ## Architecture
 
 | Surface | What it does |
 |---------|----------------|
 | `POST /v1/ingest` | Calls `ingest_folder` directly (no LLM). Reads `sample_docs/<folder>/*.md`. |
-| `POST /v1/ask` | Reuses one ADK `Runner`. Coordinator transfers to `qa_agent`, which calls `search_docs`. |
+| `POST /v1/ask` | Reuses one ADK `Runner`. Coordinator transfers to `qa_agent` or `summarize_folder_agent`. |
 | `GET /health` | API process + `SELECT 1` against Postgres |
 
 | Agent | Tools | Role |
 |-------|--------|------|
-| `coordinator` | — | Routes ingest vs handbook questions (`adk web`) |
-| `ingest_agent` | `ingest_folder`, `clear_index` | Index markdown into pgvector |
+| `coordinator` | — | Routes summaries vs specific questions |
+| `summarize_folder_agent` | `get_policy_text` | Reads source markdown and writes a short recap |
 | `qa_agent` | `search_docs` | Retrieve top-k chunks and answer with citations |
 
 Tools own the filesystem and database. FastAPI does not reimplement RAG.
@@ -118,6 +118,10 @@ curl -X POST http://127.0.0.1:8001/v1/ingest \
 curl -X POST http://127.0.0.1:8001/v1/ask \
   -H 'Content-Type: application/json' \
   -d '{"question":"How many PTO days do employees get each year?"}'
+
+curl -X POST http://127.0.0.1:8001/v1/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"question":"Summarize the PTO policy"}'
 ```
 
 A successful ask looks like:
@@ -130,9 +134,11 @@ A successful ask looks like:
 }
 ```
 
+A summary uses the same endpoint; `agent_trace` should include `summarize_folder_agent` and citations come from the source files (`score` is `1.0` because the whole file was read, not searched).
+
 `folder` is relative to `sample_docs/` (use `acme-handbook`, not a full path).
 
-Or import `postman_collection.json` into Postman (base URL `http://127.0.0.1:8001`). Run **Health → Ingest → Ask PTO**.
+Or import `postman_collection.json` into Postman (base URL `http://127.0.0.1:8001`). Run **Health → Ingest → Ask PTO → Summarize PTO**.
 
 ## UI (separate repo)
 

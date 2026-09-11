@@ -68,6 +68,23 @@
           },
           "url": "{{baseUrl}}/v1/ask"
         }
+      },
+      {
+        "name": "Summarize PTO policy",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"question\": \"Summarize the PTO policy\"\n}"
+          },
+          "url": "{{baseUrl}}/v1/ask"
+        }
       }
     ]
   }
