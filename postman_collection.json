@@ -1,0 +1,73 @@
+{
+    "info": {
+      "name": "Acme Docs Copilot API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      {
+        "key": "baseUrl",
+        "value": "http://127.0.0.1:8001"
+      }
+    ],
+    "item": [
+      {
+        "name": "Health",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": "{{baseUrl}}/health"
+        }
+      },
+      {
+        "name": "Ingest handbook",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"folder\": \"acme-handbook\"\n}"
+          },
+          "url": "{{baseUrl}}/v1/ingest"
+        }
+      },
+      {
+        "name": "Ask PTO days",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"question\": \"How many PTO days do employees get each year?\"\n}"
+          },
+          "url": "{{baseUrl}}/v1/ask"
+        }
+      },
+      {
+        "name": "Ask phishing",
+        "request": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"question\": \"Where should I report phishing?\"\n}"
+          },
+          "url": "{{baseUrl}}/v1/ask"
+        }
+      }
+    ]
+  }
