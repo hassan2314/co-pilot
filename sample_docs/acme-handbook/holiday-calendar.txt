@@ -1,0 +1,5 @@
+ACME holiday calendar
+
+The office is closed on New Year's Day and on Christmas Day.
+If a closure falls on a weekend, the weekday next to it is the observed day.
+Questions about closures go to hr@acme.example.

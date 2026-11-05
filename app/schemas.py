@@ -5,11 +5,28 @@ class IngestRequest(BaseModel):
     folder: str = Field(examples=["acme-handbook"])
 
 
+class IndexedDocument(BaseModel):
+    path: str
+    kind: str = "md"
+    chunks: int = 0
+
+
 class IngestResponse(BaseModel):
     status: str
     files: int = 0
     chunks: int = 0
     error: str | None = None
+    documents: list[IndexedDocument] = []
+
+
+class DocumentListResponse(BaseModel):
+    documents: list[IndexedDocument]
+    count: int
+    limit: int
+
+
+class ResetResponse(BaseModel):
+    status: str
 
 
 class AskRequest(BaseModel):
