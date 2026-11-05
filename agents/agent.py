@@ -1,16 +1,25 @@
+from dotenv import load_dotenv
 from google.adk.agents import Agent
+
+from app.settings import chat_model, sync_provider_keys
+
 from .tools.docs import get_policy_text, search_docs
+
+load_dotenv()
+sync_provider_keys()
+_MODEL = chat_model()
 
 summarize_folder_agent = Agent(
     name="summarize_folder_agent",
-    model="gemini-3.1-flash-lite",
-    description="Summarizes a handbook policy or folder from source markdown.",
+    model=_MODEL,
+    description="Summarizes indexed documents from their full text.",
     instruction=(
         "You only summarize. Always call get_policy_text first. "
-        "Use folder acme-handbook unless the user named another folder. "
-        "If they name a policy (PTO, security, onboarding, incidents, "
-        "eng practices), pass that as filename. If they want the whole "
-        "handbook, pass an empty filename. "
+        "The library is whatever was uploaded or ingested (PDF, TXT, or Markdown). "
+        "If the user names a document or policy (PTO, security, onboarding, "
+        "incidents, engineering, or a filename), pass that as filename. "
+        "If they want the whole library, pass an empty filename. "
+        "Folder can stay acme-handbook. "
         "Write a short bullet summary from the tool text only. Cite file "
         "paths. If the tool errors or returns nothing, say you don't know. "
         "Never invent policy. Do not answer one-off fact questions."
@@ -20,8 +29,8 @@ summarize_folder_agent = Agent(
 
 qa_agent = Agent(
     name="qa_agent",
-    model="gemini-3.1-flash-lite",
-    description="Answers company-doc questions with citations.",
+    model=_MODEL,
+    description="Answers document questions with citations.",
     instruction=(
         "Always call search_docs first. "
         "Answer only from hits. If hits are weak or empty, say you don't know. "
@@ -33,7 +42,7 @@ qa_agent = Agent(
 # For adk web debugging + POST /v1/ask
 root_agent = Agent(
     name="coordinator",
-    model="gemini-3.1-flash-lite",
+    model=_MODEL,
     description="Routes summaries vs handbook questions.",
     instruction=(
         "You are a router. Never answer the user yourself. Never ask "

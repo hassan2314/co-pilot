@@ -19,6 +19,39 @@
         }
       },
       {
+        "name": "List documents",
+        "request": {
+          "method": "GET",
+          "header": [],
+          "url": "{{baseUrl}}/v1/documents"
+        }
+      },
+      {
+        "name": "Upload a markdown file",
+        "request": {
+          "method": "POST",
+          "body": {
+            "mode": "formdata",
+            "formdata": [
+              {
+                "key": "files",
+                "type": "file",
+                "src": "sample_docs/acme-handbook/pto-policy.md"
+              }
+            ]
+          },
+          "url": "{{baseUrl}}/v1/documents"
+        }
+      },
+      {
+        "name": "Reset index",
+        "request": {
+          "method": "POST",
+          "header": [],
+          "url": "{{baseUrl}}/v1/reset"
+        }
+      },
+      {
         "name": "Ingest handbook",
         "request": {
           "method": "POST",

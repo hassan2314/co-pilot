@@ -3,3 +3,7 @@ psycopg[binary]
 python-dotenv
 google-adk>=2.8.0
 fastapi[standard]
+python-multipart
+pypdf
+openai
+litellm
