@@ -1,0 +1,7 @@
+[
+  {"query": "How many paid time off days do full-time employees receive?", "relevant_paths": ["pto-policy.md"]},
+  {"query": "How should I report a suspicious phishing email?", "relevant_paths": ["security.md"]},
+  {"query": "What should a new employee do during their first week?", "relevant_paths": ["onboarding.md"]},
+  {"query": "What should I do if an API key is leaked?", "relevant_paths": ["security.md"]},
+  {"query": "How much paid parental leave is available?", "relevant_paths": ["pto-policy.md"]}
+]
